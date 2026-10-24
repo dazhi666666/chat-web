@@ -1,0 +1,13 @@
+{
+  "default": "deepseek",
+  "systemPrompt": "",
+  "models": {
+    "deepseek": {
+      "label": "DeepSeek",
+      "baseUrl": "https://api.deepseek.com/v1",
+      "model": "deepseek-chat",
+      "apiKeyEnv": "DEEPSEEK_API_KEY",
+      "contextWindow": 128000
+    }
+  }
+}
