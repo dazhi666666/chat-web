@@ -1,16 +1,18 @@
-# Chat Web
+# free2chat
 
 <div align="right"><b>中文</b> · <a href="README.md">English</a></div>
 
-**网页纯聊天模型工作台**：dsh（deepseek-harness）聊天界面 + 任意 OpenAI 兼容的对话模型。在浏览器里开多路会话、逐字流式、切换模型、传附件、查历史——背后就是普通的 `/chat/completions`，没有 CLI 子代理、没有任务板、没有调度器。
+**把网页端的免费模型用起来——给它们一个像样的聊天界面。** DeepSeek / Kimi / Qwen / GLM 的网页端都白送模型，[DeepSeek-Free-API](https://github.com/LLM-Red-Team/deepseek-free-api)、[Chat2API](https://github.com/xiaoY233/Chat2API) 这类项目把它们桥接成 OpenAI 兼容接口（OpenRouter 的 `:free`、SiliconFlow 免费档、本地 Ollama 也一样）——这些接口全都是**纯文本**的。free2chat 用 dsh（deepseek-harness）的聊天界面把它们接成顺手的多会话网页聊天：多路会话、逐字流式、切换模型、传附件、查历史。没有 CLI 子代理、没有任务板、没有调度器。
 
-从 Agent Router 提取：原项目里「网页 + 纯聊天模型」这一块（dsh 聊天界面、对话模型接入、用量与流式展示）独立成本项目；多 agent 协作部分已拆到 [Agent Router MCP](../Agent-Router-MCP)。
+想让免费模型更进一步、直接干代码活（跑命令、读写文件）？看姊妹项目 [free2agent](https://github.com/dazhi666666/free2agent)。
+
+从 Agent Router 提取：原项目里「网页 + 纯聊天模型」这一块（dsh 聊天界面、对话模型接入、用量与流式展示）独立成本项目；多 agent 协作部分已拆到 [Agent Router MCP](https://github.com/dazhi666666/agent-router-mcp)。
 
 ```
 浏览器（dsh 聊天界面，dsh-web/ 为 deepseek-harness 本地构建）
    │ /dsh-api、/dsh-api-stream（NDJSON 流）
    ▼
-Chat Web 服务器（server.mjs，零依赖，Node ≥ 20）
+free2chat 服务器（server.mjs，零依赖，Node ≥ 20）
    ├─ bridge/dsh-bridge.mjs   dsh SessionEvent v4 协议桥：线程条目 ↔ 事件流
    ├─ core/runner.mjs         聊天执行器：历史组装 → 流式调用 → 线程落盘；排队与中止
    ├─ core/chats.mjs          会话存储：data/chats/<id>/threads/main.jsonl
@@ -27,19 +29,26 @@ cd D:\Chat-Web
 node server.mjs          # 默认 http://127.0.0.1:2299（会话流在 2300）
 ```
 
-首次启动前编辑 `chat.config.json`，至少配置一个对话模型：
+首次启动前编辑 `chat.config.json`，至少配置一个对话模型。免费额度示例（以各站点当前政策为准）：
 
 ```json
 {
-  "default": "deepseek",
+  "default": "openrouter",
   "systemPrompt": "",
   "models": {
-    "deepseek": {
-      "label": "DeepSeek",
-      "baseUrl": "https://api.deepseek.com/v1",
-      "model": "deepseek-chat",
-      "apiKeyEnv": "DEEPSEEK_API_KEY",
+    "openrouter": {
+      "label": "OpenRouter 免费",
+      "baseUrl": "https://openrouter.ai/api/v1",
+      "model": "deepseek/deepseek-chat-v3.1:free",
+      "apiKeyEnv": "OPENROUTER_API_KEY",
       "contextWindow": 128000
+    },
+    "ollama": {
+      "label": "本地 Ollama",
+      "baseUrl": "http://127.0.0.1:11434/v1",
+      "model": "qwen3:32b",
+      "noAuth": true,
+      "contextWindow": 32000
     }
   }
 }
@@ -97,7 +106,7 @@ data/
 
 与 Agent Router 的关系：
 
-| | Agent Router | Agent Router MCP | Chat Web |
+| | Agent Router | Agent Router MCP | free2chat |
 |---|---|---|---|
 | 形态 | 主代理派发式多 agent 协作 | 任意 agent 软件经 MCP 平等互联 | 网页与纯聊天模型对话 |
 | 执行者 | 本机 CLI（claude/zcode/codex…） | 宿主 agent 软件自己 | 无 agent——直连对话模型 |

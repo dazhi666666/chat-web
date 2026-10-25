@@ -1,4 +1,4 @@
-// Chat Web 服务器：dsh 聊天界面 + /dsh-api 桥接 + 对话模型执行。
+// free2chat 服务器：dsh 聊天界面 + /dsh-api 桥接 + 对话模型执行。
 // 纯聊天：没有 CLI 子代理、没有任务板；每个会话就是一条线程，回复由 lib/provider.mjs
 // 直连 OpenAI 兼容接口（chat.config.json）逐字流出。
 import http from 'node:http';
@@ -22,7 +22,7 @@ const STREAM_PORT = Number(process.env.PORT || 2299) + 1;
 const INDEX = (() => {
   try {
     return fs.readFileSync(path.join(DSH, 'index.html'), 'utf8')
-      .replace('<title>DSH Local Build</title>', '<title>Chat Web · 对话模型</title>')
+      .replace('<title>DSH Local Build</title>', '<title>free2chat · 对话模型</title>')
       .replace('</head>', `<script>window.AR_STREAM_PORT=${STREAM_PORT}</script><script src="/chat-transport.js" defer></script></head>`);
   } catch {
     return null;
@@ -119,13 +119,13 @@ export function createApp({ dataDir = process.env.CHAT_WEB_DATA_DIR || path.join
 if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
   const { server, handler } = createApp(); const port = Number(process.env.PORT || 2299);
   server.on('error', e => {
-    if (e.code === 'EADDRINUSE') { console.error(`端口 ${port} 已被占用（可能已有一个 Chat Web 在跑）。换端口：PORT=2299 node server.mjs`); process.exit(1); }
+    if (e.code === 'EADDRINUSE') { console.error(`端口 ${port} 已被占用（可能已有一个 free2chat 在跑）。换端口：PORT=2299 node server.mjs`); process.exit(1); }
     throw e;
   });
-  server.listen(port, '127.0.0.1', () => console.log(`Chat Web: http://127.0.0.1:${server.address().port}`));
+  server.listen(port, '127.0.0.1', () => console.log(`free2chat: http://127.0.0.1:${server.address().port}`));
   // 常驻会话流单独一个端口：流各占一条连接且永不结束，混在主端口会把浏览器同域 6 连接占满，
   // 页面的普通请求就永远排队。独立端口有自己的连接池；起不来时前端自动回退同源（回到旧行为）
   const streams = http.createServer(handler);
   streams.on('error', e => console.error(`会话流端口 ${port + 1} 不可用（${e.message}），前端将回退同源流`));
-  streams.listen(port + 1, '127.0.0.1', () => console.log(`Chat Web 会话流: http://127.0.0.1:${streams.address().port}`));
+  streams.listen(port + 1, '127.0.0.1', () => console.log(`free2chat 会话流: http://127.0.0.1:${streams.address().port}`));
 }

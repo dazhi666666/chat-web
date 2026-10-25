@@ -1,16 +1,18 @@
-# Chat Web
+# free2chat
 
 <div align="right"><b>English</b> · <a href="README.zh-CN.md">中文</a></div>
 
-**A web workbench for pure chat models**: the dsh (deepseek-harness) chat UI + any OpenAI-compatible chat model. Multi-session chat with token-level streaming, model switching, attachments, and history — backed by a plain `/chat/completions` call. No CLI subagents, no task board, no scheduler.
+**The web's free models deserve a real chat UI.** DeepSeek, Kimi, Qwen and GLM all hand out free models on their web pages; projects like [DeepSeek-Free-API](https://github.com/LLM-Red-Team/deepseek-free-api) and [Chat2API](https://github.com/xiaoY233/Chat2API) bridge those sessions into OpenAI-compatible endpoints (OpenRouter's `:free` models, SiliconFlow's free tier, and local Ollama work the same). Every one of them is **pure text**. free2chat wraps them in the dsh (deepseek-harness) chat UI: multi-session, token streaming, model switching, attachments, and history. No CLI subagents, no task board, no scheduler.
 
-Extracted from Agent Router: the "web page + pure chat models" part (dsh chat UI, chat-model integration, usage & streaming display) is now this standalone project; the multi-agent collaboration core moved to [Agent Router MCP](../Agent-Router-MCP).
+Want the free models to go further and actually do coding work (run commands, read and write files)? See the sister project [free2agent](https://github.com/dazhi666666/free2agent).
+
+Extracted from Agent Router: the "web page + pure chat models" part (dsh chat UI, chat-model integration, usage & streaming display) is now this standalone project; the multi-agent collaboration core moved to [Agent Router MCP](https://github.com/dazhi666666/agent-router-mcp).
 
 ```
 Browser (dsh chat UI; dsh-web/ is a local deepseek-harness build)
    │ /dsh-api, /dsh-api-stream (NDJSON streams)
    ▼
-Chat Web server (server.mjs, zero dependencies, Node ≥ 20)
+free2chat server (server.mjs, zero dependencies, Node ≥ 20)
    ├─ bridge/dsh-bridge.mjs   dsh SessionEvent v4 bridge: thread entries ↔ event stream
    ├─ core/runner.mjs         chat runner: history assembly → streamed call → thread log; queue & abort
    ├─ core/chats.mjs          session store: data/chats/<id>/threads/main.jsonl
@@ -27,19 +29,26 @@ cd D:\Chat-Web
 node server.mjs          # default http://127.0.0.1:2299 (stream port 2300)
 ```
 
-Edit `chat.config.json` before the first start — at least one chat model:
+Edit `chat.config.json` before the first start — at least one chat model. Free-tier examples (subject to each site's current policy):
 
 ```json
 {
-  "default": "deepseek",
+  "default": "openrouter",
   "systemPrompt": "",
   "models": {
-    "deepseek": {
-      "label": "DeepSeek",
-      "baseUrl": "https://api.deepseek.com/v1",
-      "model": "deepseek-chat",
-      "apiKeyEnv": "DEEPSEEK_API_KEY",
+    "openrouter": {
+      "label": "OpenRouter Free",
+      "baseUrl": "https://openrouter.ai/api/v1",
+      "model": "deepseek/deepseek-chat-v3.1:free",
+      "apiKeyEnv": "OPENROUTER_API_KEY",
       "contextWindow": 128000
+    },
+    "ollama": {
+      "label": "Local Ollama",
+      "baseUrl": "http://127.0.0.1:11434/v1",
+      "model": "qwen3:32b",
+      "noAuth": true,
+      "contextWindow": 32000
     }
   }
 }
@@ -97,7 +106,7 @@ data/
 
 Relationship to Agent Router:
 
-| | Agent Router | Agent Router MCP | Chat Web |
+| | Agent Router | Agent Router MCP | free2chat |
 |---|---|---|---|
 | Shape | main-agent dispatches to CLI subagents | any agent software joins as equals via MCP | web page ↔ pure chat models |
 | Executor | local CLIs (claude/zcode/codex…) | the host agent software itself | none — direct model calls |

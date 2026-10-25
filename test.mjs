@@ -1,4 +1,4 @@
-// Chat Web 测试：node --test test.mjs
+// free2chat 测试：node --test test.mjs
 // 覆盖：配置加载、provider（SSE/鉴权/ reasoning）、会话存储、runner（回合/排队/中止/系统提示词）、
 // dsh 桥（unary 全链路、selectModel、session/follow 流式帧）、HTTP 服务器冒烟。
 import test from 'node:test';
@@ -382,7 +382,7 @@ test('server: HTTP 冒烟（INDEX 注入、health、dsh-api 全链路、静态�
   const base = `http://127.0.0.1:${server.address().port}`;
   // 首页注入
   const html = await (await fetch(base + '/')).text();
-  assert.match(html, /<title>Chat Web · 对话模型<\/title>/);
+  assert.match(html, /<title>free2chat · 对话模型<\/title>/);
   assert.match(html, /window\.AR_STREAM_PORT=\d+/);
   assert.match(html, /\/chat-transport\.js/);
   // health
